@@ -1,0 +1,9 @@
+[package]
+name = "glint"
+version = "0.1.0"
+authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+glium = "0.23"
+vek = "0.9"
