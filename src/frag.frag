@@ -9,16 +9,17 @@ in vec2 f_pos;
 
 out vec4 f_color;
 
-#define MAX_ITERS 100
+#define MAX_ITERS 300
 #define PLANK 0.015
-#define MAX_REFLECTIONS 1
+#define MAX_REFLECTIONS 0
 
 float length_squared(vec3 v) {
 	return v.x * v.x + v.y * v.y + v.z * v.z;
 }
 
 float sphere(vec3 pos) {
-	return length_squared(mod(pos, 1.0) - 0.5) - 0.05;
+	vec3 looped = mod(pos, 1.0);
+	return length_squared(looped - 0.5) - 0.05 + sin(sin(pos.x * 20.0) + sin(pos.y * 20.0) + sin(pos.z * 20.0)) * 0.02;
 }
 
 float vmax(vec3 v) {
@@ -68,14 +69,18 @@ vec3 dir_to_nearest_light(vec3 pos) {
 	return -normalize(mod(pos, 15.0) - 7.5);
 }
 
+float dist_to_nearest_light(vec3 pos) {
+	return length_squared(mod(pos, 15.0) - 7.5);
+}
+
 float march_shadow(vec3 pos, vec3 dir) {
 	float min_dist = 100000.0;
 	float last_dist = 100000.0;
 	vec3 start_pos = pos;
-	for (int i = 0; i < MAX_ITERS; i ++) {
+	for (int i = 0; i < MAX_ITERS / 3; i ++) {
 		float dist = sdf(pos);
 
-		float prec = length_squared((cam_pos - pos) * 0.1) / 20.0;
+		float prec = length_squared((start_pos - pos) * 1.5) / 20.0;
 
 		if (dist < PLANK * prec) {
 			if (is_light(pos)) {
@@ -101,10 +106,10 @@ vec3 compute_color(vec3 pos, vec3 dir) {
 	vec3 light_dir = dir_to_nearest_light(pos);
 	//vec3 light_dir = normalize(vec3(1.0, 1.0, -1.0));
 
-	//float diffuse = max(dot(light_dir, norm), 0.0) - 0.1;
+	float diffuse = max(dot(light_dir, norm), 0.0) - 0.1;
 	float specular = pow(max(dot(reflect(dir, norm), light_dir), 0.0), 20.0);
 
-	float shadow = march_shadow(pos + light_dir * PLANK * 10.0, light_dir);
+	float shadow = 1.0;//march_shadow(pos + light_dir * PLANK * 10.0, light_dir);
 
 	vec3 color = vec3(sin(pos.x * 4.0), sin(pos.y * 4.0), sin(pos.z * 4.0)) * 0.5 + 0.5;
 
@@ -112,7 +117,8 @@ vec3 compute_color(vec3 pos, vec3 dir) {
 		return vec3(4.0);
 	}
 
-	return color * shadow + specular * shadow;
+	float light_dist = dist_to_nearest_light(pos);
+	return color * shadow * diffuse / light_dist + specular * shadow / light_dist;
 }
 
 void main() {
