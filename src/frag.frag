@@ -10,7 +10,7 @@ in vec2 f_pos;
 out vec4 f_color;
 
 #define MAX_ITERS 300
-#define PLANK 0.001
+#define PLANK 0.01
 #define MAX_REFLECTIONS 0
 
 float length_squared(vec3 v) {
@@ -175,18 +175,18 @@ float ssdf(vec3 pos) {
 		+ sin(pos.x / 30.0) * 20.0
 		+ sin(pos.y / 30.0) * 20.0
 		+ sin(pos.z / 30.0) * 20.0
-		+ sin(pos.x / 5.0) * 3.0
-		+ sin(pos.y / 5.0) * 3.0
-		+ sin(pos.z / 5.0) * 3.0
-		+ sin(pos.x / 1.0) * 0.7
-		+ sin(pos.y / 1.0) * 0.7
-		+ sin(pos.z / 1.0) * 0.7
-		+ sin(pos.x / 0.2) * 0.2
+		+ sin(pos.x / 5.0) * 5.0
+		+ sin(pos.y / 5.0) * 5.0
+		+ sin(pos.z / 5.0) * 5.0
+		+ sin(pos.x / 1.3) * 1.3
+		+ sin(pos.y / 1.3) * 1.3
+		+ sin(pos.z / 1.3) * 1.3
+		+ sin(pos.x / 0.2) * 0.3
 		+ sin(pos.y / 0.2) * 0.2
 		+ sin(pos.z / 0.2) * 0.2
-		+ sin(pos.x / 0.05) * 0.05
-		+ sin(pos.y / 0.05) * 0.05
-		+ sin(pos.z / 0.05) * 0.05
+		+ sin(pos.x / 0.05) * 0.1
+		+ sin(pos.y / 0.05) * 0.1
+		+ sin(pos.z / 0.05) * 0.1
 	;
 }
 
@@ -198,16 +198,24 @@ vec3 ssdf_norm(vec3 pos) {
 	));
 }
 
+vec3 planet_color(vec3 pos) {
+	return vec3(
+		0.2 + (sin(pos.x * 10.0) + sin(pos.y * 10.0) + sin(pos.z * 10.0) + 3.0) / 8.0,
+		0.2 + (sin(pos.x *  1.0) + sin(pos.y *  1.0) + sin(pos.z *  1.0) + 3.0) / 8.0,
+		0.2 + (sin(pos.x *  0.1) + sin(pos.y *  0.1) + sin(pos.z *  0.1) + 3.0) / 8.0
+	);
+}
+
 vec3 march_ssdf(vec3 pos, vec3 dir) {
 	float t = 0.0;
 	float min_d = 100000.0;
 	float min_t;
 	for (int i = 0; i < 128; i ++) {
-		float prec = t / 10.0;
+		float prec = t / 5.0;
 
 		vec3 p = pos + dir * t;
 
-		float d = ssdf(p) * 0.25;
+		float d = (ssdf(p) + PLANK * prec) * 0.25;
 
 		if (d < min_d) {
 			min_d = d;
@@ -215,8 +223,7 @@ vec3 march_ssdf(vec3 pos, vec3 dir) {
 		}
 
 		if (d < PLANK * prec) {
-			vec3 color = vec3(0.5, 1.0, 0.2) * (sin(p.x) + sin(p.y) + sin(p.z) + 3.0) / 6.0;
-			return phong(color, ssdf_norm(p), dir);
+			return phong(planet_color(p), ssdf_norm(p), dir);
 		} else if (t > 100000.0) {
 			return vec3(0);
 		} else {
@@ -227,8 +234,7 @@ vec3 march_ssdf(vec3 pos, vec3 dir) {
 		return vec3(0);
 	} else {
 		vec3 p = pos + dir * min_t;
-		vec3 color = vec3(0.5, 1.0, 0.2) * (sin(p.x) + sin(p.y) + sin(p.z) + 3.0) / 3.0;
-		return phong(color, ssdf_norm(p), dir);
+		return phong(planet_color(p), ssdf_norm(p), dir);
 	}
 }
 

@@ -57,7 +57,7 @@ fn main() {
     ).unwrap();
 
     let mut cam_ori = Vec3::zero();
-    let mut pos = Vec3::<f32>::zero();
+    let mut pos = Vec3::<f32>::new(0.0, 0.0, -1020.0);
 
     let mut fwd = false;
     let mut back = false;
@@ -122,7 +122,7 @@ fn main() {
             if up { 1.0 } else { 0.0 } - if down { 1.0 } else { 0.0 },
             if back { 1.0 } else { 0.0 } - if fwd { 1.0 } else { 0.0 },
             0.0,
-        ) * 1.0;
+        ) * 0.1;
 
         // building the uniforms
         let uniforms = uniform! {
