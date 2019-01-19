@@ -178,9 +178,15 @@ float ssdf(vec3 pos) {
 		+ sin(pos.x / 5.0) * 3.0
 		+ sin(pos.y / 5.0) * 3.0
 		+ sin(pos.z / 5.0) * 3.0
-		+ sin(pos.x / 1.0) * 0.5
-		+ sin(pos.y / 1.0) * 0.5
-		+ sin(pos.z / 1.0) * 0.5
+		+ sin(pos.x / 1.0) * 0.7
+		+ sin(pos.y / 1.0) * 0.7
+		+ sin(pos.z / 1.0) * 0.7
+		+ sin(pos.x / 0.2) * 0.2
+		+ sin(pos.y / 0.2) * 0.2
+		+ sin(pos.z / 0.2) * 0.2
+		+ sin(pos.x / 0.05) * 0.05
+		+ sin(pos.y / 0.05) * 0.05
+		+ sin(pos.z / 0.05) * 0.05
 	;
 }
 
@@ -196,12 +202,12 @@ vec3 march_ssdf(vec3 pos, vec3 dir) {
 	float t = 0.0;
 	float min_d = 100000.0;
 	float min_t;
-	for (int i = 0; i < 96; i ++) {
-		float prec = t / 100.0;
+	for (int i = 0; i < 128; i ++) {
+		float prec = t / 10.0;
 
 		vec3 p = pos + dir * t;
 
-		float d = ssdf(p) * 0.5;
+		float d = ssdf(p) * 0.25;
 
 		if (d < min_d) {
 			min_d = d;
@@ -209,7 +215,7 @@ vec3 march_ssdf(vec3 pos, vec3 dir) {
 		}
 
 		if (d < PLANK * prec) {
-			vec3 color = vec3(0.5, 1.0, 0.2) * (sin(p.x) + sin(p.y) + sin(p.z) + 3.0) / 3.0;
+			vec3 color = vec3(0.5, 1.0, 0.2) * (sin(p.x) + sin(p.y) + sin(p.z) + 3.0) / 6.0;
 			return phong(color, ssdf_norm(p), dir);
 		} else if (t > 100000.0) {
 			return vec3(0);
@@ -323,7 +329,7 @@ void main() {
 	vec3 pos = (view_mat * vec4(0.0, 0.0, 0.0, 1.0)).xyz + cam_pos;
 	vec3 dir = normalize((view_mat * proj_mat * vec4(f_pos, 1.0, 1.0)).xyz);
 
-	f_color = vec4(march_voxels(pos, dir), 1.0);
+	f_color = vec4(march_ssdf(pos, dir), 1.0);
 	return;
 
 	float color_weight = 0.9;
